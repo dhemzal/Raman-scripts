@@ -2,8 +2,8 @@
 
 This repository contains some generic perl scripts that can be used to handle Raman data prior to their visualisation in several directions:
    
-   - basic: accumulation, smoothing, luminescence treatment, dataset splitting
-   - advanced: peak picking/fitting, derivative spectra
+   - basic: accumulation/scaling, background subtraction, dataset splitting
+   - advanced: smoothing, luminescence treatment, peak picking/fitting, derivative spectra
    - statistic: covariance analysis, spectra decompostion (PCA)
    
  THE REPOSITORY IS YET IN SET-UP PHASE
