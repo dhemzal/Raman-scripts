@@ -1,4 +1,4 @@
-# Raman-srcipts
+# Raman-scripts
 
 This repository contains some generic perl scripts that can be used to handle Raman data prior to their visualisation in several directions:
    
