@@ -13,11 +13,11 @@ Optional switches: -v (verbose), -i (inifile, without .ini suffix)
 Examples of use
 
 Extraction of time resolved measurements (three-column files with repeating block of individual measurements,
-the first column is used to mark the individual datasets (eg. by time stamp of particular measurement start)
+the first column is used to mark the individual datasets (eg. by time stamp of particular measurement start):
     perl split.pl  time_measurement
 
 Extraction of mapping measurements (four-column files with repeating block of individual measurements,
-the first two columns are used to mark the individual datasets (eg by x-y coordinates of the measured spot)
+the first two columns are used to mark the individual datasets (eg by x-y coordinates of the measured spot):
    perl split.pl  mapping_measurement
    for file in [*_mapping_measurement]; do perl split.pl file;done
 
@@ -48,7 +48,10 @@ Optional switches: -v (verbose), -i (inifile, without .ini suffix)
 Examples of use
 
 Simple accumulation of data:
-  perl cummulation.pl Si_15s Si_10s,Si_5s 1.0,1.0
+  perl cummulation.pl spectrum_15s spectrum_10s,spectrum_5s 1.0,1.0
+
+Scaling of a spectrum:
+  perl cummulation.pl scaled spectrum 1.45
 
 Background subtraction:
   perl cummulation.pl analyte analyte_in_capillary,capillary 1.0,-1.0
