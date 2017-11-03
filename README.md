@@ -11,7 +11,7 @@ This repository contains some generic perl scripts that can be used to handle Ra
 Motivation is to allow for codified treatment of the spectra by different users and to track the actual version of the scripts.
 The repository is used in education.
 
-Intention is to keep things simple; the scripts do not attempt to check user's sanity.
+Intention is to keep things simple; all scripts are kept standalone and do not attempt to check user's sanity.
 
 Actually, the only data structure constraint is a tab-separated two-column text file; three-column (time snapshots) and four column (mapping measurements) can be handled too via dataset splitting.
 
