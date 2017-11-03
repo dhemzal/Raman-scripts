@@ -1,16 +1,30 @@
 #!/usr/bin/perl
 
-# version 1.1
+
+# perl split.pl -i inifile -v file1,..,fileN
+# ver 1.0
 
 
 
-open(INIT,"rozdelsady.ini") or die;
-while ($radek=<INIT>){
-chomp($radek);
 
-if (($radek !~/^\%/) and ($radek ne "")){
-  @pomo=split(/#/,$radek);
-  $ini{$pomo[0]}=$pomo[1];
+use Getopt::Std;
+getopts('vi:');
+
+
+
+
+
+# INI file read
+$topen="split.ini";
+if ($opt_i ne ""){$topen=$opt_i.".ini"};
+
+open(INIT,$topen) or die;
+while ($rrow=<INIT>){
+  chomp($rrow);
+
+  if (($rrow !~/^\%/) and ($rrow ne "")){
+    @pomo=split(/#/,$rrow);
+    $ini{$pomo[0]}=$pomo[1];
   }
 }
 close INIT;
@@ -19,39 +33,48 @@ close INIT;
 
 
 
-@pole=split(/,/, $ARGV[0]);
 
 
-foreach $postupne(@pole){
 
-  $ktery=0;
 
-  open(VSTUP, "$ini{prefix}"."$postupne"."$ini{suffix}") or die;
-  $radek=<VSTUP>; @pomo=split(/\t/,$radek);
+@tosplit=split(/,/, $ARGV[0]);
 
-  if ($ktery<10){
-  open(VYSTUP, ">".$ini{prefix}."0".$ktery."_"."$postupne$ini{suffix}") or die;
+
+foreach $partial(@tosplit){
+  
+  if ($opt_v){print "$partial: "}
+  $which=0;
+
+  open(INPUT, "$ini{prefix}"."$partial"."$ini{suffix}") or die;
+  $rrow=<INPUT>; 
+  if($rrow =~ m/([^\t]*)\t(.*)/){$beg=$1;$end=$2;}
+  if ($opt_v){print "$which "}
+  if ($which<10){
+    open(OUTPUT, ">".$ini{prefix}."0".$which."_"."$partial$ini{suffix}") or die;
   }else{
-  open(VYSTUP, ">".$ini{prefix}.$ktery."_"."$postupne$ini{suffix}") or die;
+    open(OUTPUT, ">".$ini{prefix}.$which."_"."$partial$ini{suffix}") or die;
   }
-  print VYSTUP  $pomo[1]."\t".$pomo[2];
+  print OUTPUT  "$end\n";
 
-  while ($radek=<VSTUP>){
-    $old=$pomo[0];@pomo=split(/\t/,$radek);
-
-    if ($old ne $pomo[0]){
-       close VYSTUP; $ktery++;
-       if ($ktery<10){
-          open(VYSTUP, ">".$ini{prefix}."0".$ktery."_"."$postupne$ini{suffix}") or die;
+  while ($rrow=<INPUT>){
+    $old=$beg;
+    if($rrow =~ m/([^\t]*)\t(.*)/){$beg=$1;$end=$2;}
+    if ($old ne $beg){
+       close OUTPUT; $which++;
+       if ($which<10){
+          open(OUTPUT, ">".$ini{prefix}."0".$which."_"."$partial$ini{suffix}") or die;
+          if ($opt_v){print "$which "}
        }else{
-          open(VYSTUP, ">".$ini{prefix}.$ktery."_".$postupne."$ini{suffix}");
+          open(OUTPUT, ">".$ini{prefix}.$which."_".$partial."$ini{suffix}") or die;
+          if ($opt_v){print "$which "}
        }
     }
-    print VYSTUP $pomo[1]."\t".$pomo[2] or die;
+    print OUTPUT "$end\n";
   }
-
-  close VYSTUP;
+  if ($opt_v){print "\n"}
+  close OUTPUT;
 }
+
 
 
 
