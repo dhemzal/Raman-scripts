@@ -2,51 +2,61 @@
 
 
 
+# perl smooth.pl -i inifile -v outfile file1,..,fileN
+# ver 1.0
 
 
 
 
+use Getopt::Std;
+getopts('vi:');
 
 
 
-open(INIT,"smooth.ini") or die;
-while ($radek=<INIT>){
 
-chomp($radek);
+# INI file read
+$topen="smooth.ini";
+if ($opt_i ne ""){$topen=$opt_i.".ini"};
 
+open(INIT,$topen) or die;
+while ($rrow=<INIT>){
+  chomp($rrow);
 
-if (($radek !~/^\%/) and ($radek ne "")){
-  @pomo=split(/#/,$radek);
-$ini{$pomo[0]}=$pomo[1];
+  if (($rrow !~/^\%/) and ($rrow ne "")){
+    @pomo=split(/#/,$rrow);
+    $ini{$pomo[0]}=$pomo[1];
+  }
 }
-
-
-}
-
-
 close INIT;
 
 
 
-@poradi=split(/,/,$ARGV[0]);
-$pocet=@poradi;
 
 
-for ($i=0;$i<$pocet;$i++){
-$soubor="$ini{prefix}"."$poradi[$i]"."$ini{suffix}";
-print "\n".$soubor.": ";
-open(VSTUP,$soubor) or die;
-$bod=0;
-while ($radek=<VSTUP>){
-chomp($radek);
-@pole=split(/\t/,$radek);
-$vlnocet[$bod]=$pole[0];
-$hodnota[$i][$bod]=$pole[1];$orig[$i][$bod]=$pole[1];
-$bod++;
-}
-$bodu=$bod;
-print "$bod bodu\n";
-close VSTUP;
+
+
+@tosmooth=split(/,/,$ARGV[0]);
+$count=@tosmooth;
+
+
+
+
+# read all data
+for ($i=0;$i<$count;$i++){
+  $datfile="$ini{prefix}"."$tosmooth[$i]"."$ini{suffix}";
+  $opt_v and print "\n".$datfile.": ";
+  open(INPUT,$datfile) or die;
+  $point=0;
+  while ($rrow=<INPUT>){
+    chomp($rrow);
+    @pole=split(/\t/,$rrow);
+    $wnumber[$point]=$pole[0];
+    $orig[$i][$point]=$pole[1];
+    $point++;
+  }
+  $points=$point;
+  $opt_v and print "$point points\n";
+  close INPUT;
 }
 print "\n";
 
@@ -58,45 +68,27 @@ print "\n";
 
 
 
+# smoothing
+for ($i=0;$i<$count;$i++){
 
-for ($i=0;$i<$pocet;$i++){
+  open(OUTPUT,">$ini{prefix}"."$tosmooth[$i]_smooth"."$ini{suffix}") or die;
+  $window=0;
 
+  for ($pointy=0;$pointy<$points;$pointy++){
 
+    if ((($pointy-$window-1)>=0)and($pointy+$window+1)<$points){
+      $window++;
+    }
+    while (($window>$ini{window})or($pointy+$window>=$points)){$window--}
 
+    $average=0;
+    for ($y=$pointy-$window;$y<=$pointy+$window;$y++){
+      $average+=$orig[$i][$y];
+    }
+    printf OUTPUT "$wnumber[$pointy]\t%1.6f\n",$average/(2*$window+1);
+  }
 
-
-$odkud=$ini{window};
-while ($vlnocet[$odkud-$ini{window}]>$ini{xmax}){$odkud++}
-$kam=$bodu-$ini{window}-1;
-while ($vlnocet[$kam+$ini{window}]<$ini{xmin}){$kam--}
-
-#print "$vlnocet[$odkud-$ini{window}] $vlnocet[$kam+$ini{window}] \n";
-
-
-for ($body=$odkud;$body<$kam;$body++){
-$prumer=0;
-for ($y=0;$y<(2*$ini{window}+1);$y++){$prumer+=$hodnota[$i][$body+$y-$ini{window}];}
-$prumer=$prumer/(2*$ini{window}+1);
-$hodnota[$i][$body]=$prumer;
-}
-
-
-
-
-
-open(VYSTUP,">$ini{prefix}"."$poradi[$i]_smooth"."$ini{suffix}") or die;
-
-for ($body=$odkud;$body<$kam;$body++){
-printf VYSTUP "$vlnocet[$body]\t%1.6f\n",$hodnota[$i][$body+1];
-}
-close VYSTUP;
-
-
-
-
-
-
-
+  close OUTPUT;
 
 }
 
