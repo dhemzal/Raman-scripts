@@ -66,4 +66,22 @@ Bash addition:
 
 
 
+SMOOTH
+
+  perl smooth.pl -v -i <inifile> <file1>,..,<fileN>
+
+Moving average smoothing of the spectrum, the (half)length of the window is read from the initial file. Multiple files can be used 
+only for spectra with identical sampling. To keep to length of the data, smoothing window is being shortened close the edges of the spetrum.
+The smoothed spectra are suffixed as <filei>_smooth.
+
+Optional switches: -v (verbose), -i (inifile, without .ini suffix)
+
+
+
+Examples of use
+
+perl smooth.pl spectrum
+
+
+
 
