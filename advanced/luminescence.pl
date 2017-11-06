@@ -1,53 +1,64 @@
 #!/usr/bin/perl
 
 
+# perl luminescence.pl -i inifile -v file1,..,fileN
+# ver 1.0
 
 
 
 
+use Getopt::Std;
+getopts('vi:');
 
 
 
 
-open(INIT,"luminescence.ini") or die;
-while ($radek=<INIT>){
+# INI file read
+$topen="luminescence.ini";
+if ($opt_i ne ""){$topen=$opt_i.".ini"};
 
-chomp($radek);
+open(INIT,$topen) or die;
+while ($rrow=<INIT>){
+  chomp($rrow);
 
-
-if (($radek !~/^\%/) and ($radek ne "")){
-  @pomo=split(/#/,$radek);
-$ini{$pomo[0]}=$pomo[1];
+  if (($rrow !~/^\%/) and ($rrow ne "")){
+    @pomo=split(/#/,$rrow);
+    $ini{$pomo[0]}=$pomo[1];
+  }
 }
-
-
-}
-
-
 close INIT;
 
 
 
-@poradi=split(/,/,$ARGV[0]);
-$pocet=@poradi;
 
 
-for ($i=0;$i<$pocet;$i++){
-$soubor="$ini{prefix}"."$poradi[$i]"."$ini{suffix}";
-print "\n".$soubor.": ";
-open(VSTUP,$soubor) or die;
-$bod=0;
-while ($radek=<VSTUP>){
-chomp($radek);
-@pole=split(/\t/,$radek);
-$vlnocet[$i][$bod]=$pole[0];
-$hodnota[$i][$bod]=$pole[1];$orig[$i][$bod]=$pole[1];
-$bod++;
-}
-$bodu[$i]=$bod;
-$hodnota[$i][0]=$hodnota[$i][1];$orig[$i][0]=$orig[$i][1];
-print "$bod bodu\n";
-close VSTUP;
+
+
+
+
+
+@tolumin=split(/,/,$ARGV[0]);
+$count=@tolumin;
+
+
+# read all data
+for ($i=0;$i<$count;$i++){
+  $datfile="$ini{prefix}"."$tolumin[$i]"."$ini{suffix}";
+  $opt_v and print "\n".$datfile.": ";
+  open(INPUT,$datfile) or die;
+  $point=0;
+  while ($rrow=<INPUT>){
+    chomp($rrow);
+    @pole=split(/\t/,$rrow);
+    $wnumber[$i][$point]=$pole[0];
+    $value[$i][$point]=$pole[1];$orig[$i][$point]=$pole[1];
+    $point++;
+  }
+  $points[$i]=$point;
+  $value[$i][0]=$value[$i][1];$orig[$i][0]=$orig[$i][1];
+  $value[$i][$points-1]=$value[$i][$points-2];$orig[$i][$points-1]=$orig[$i][$points-2];
+  $opt_v and print "$point points\n";
+  close INPUT;
 }
 print "\n";
 
@@ -59,56 +70,37 @@ print "\n";
 
 
 
-
-for ($i=0;$i<$pocet;$i++){
-
-
-for ($j=0;$j<$ini{iterations};$j++){
+# luminescence removal
+for ($i=0;$i<$count;$i++){
 
 
-#$odkud=$ini{window};
-#while ($vlnocet[$odkud-$ini{window}]>$ini{xmax}){$odkud++}
-#$kam=$bodu-$ini{window}-1;
-#while ($vlnocet[$kam+$ini{window}]<$ini{xmin}){$kam--}
+  for ($j=0;$j<$ini{iterations};$j++){
+    $window=0;
 
-#print "$vlnocet[$odkud-$ini{window}] $vlnocet[$kam+$ini{window}] \n";
+    for ($pointy=0;$pointy<$points[$i];$pointy++){
+      if ((($pointy-$window-1)>=0)and($pointy+$window+1)<$points[$i]){$window++;}
+      while (($window>$ini{window})or($pointy+$window>=$points[$i])){$window--}
 
-$okno=0;
-for ($body=0;$body<$bodu[$i];$body++){
-  $prumer=0;
-  for ($y=0;$y<(2*$okno+1);$y++){$prumer+=$hodnota[$i][$body-$okno+$y];}
-  $prumer=$prumer/(2*$okno+1);
-  if ($prumer<$hodnota[$i][$body]){$hodnota[$i][$body]=$prumer}
-  if ($okno<$ini{window}){$okno++}
-  while ($body+$okno > $bodu[$i]-2){$okno--}
-}
+      $average=0;
+      for ($y=$pointy-$window;$y<=$pointy+$window;$y++){$average+=$orig[$i][$y];}
+      $average=$average/(2*$window+1);
+      if ($average<$value[$i][$pointy]){$value[$i][$pointy]=$average}
+    }
+  }
 
+  open(OUTPUT,">$ini{prefix}"."$tolumin[$i]_lumin"."$ini{suffix}") or die;
+  printf OUTPUT "$wnumber[$i][0]\t%1.6f\n",$orig[$i][0]-$value[$i][0];
+  for ($pointy=1;$pointy<$points[$i];$pointy++){
+    printf OUTPUT "$wnumber[$i][$pointy]\t%1.6f\n",$orig[$i][$pointy]-$value[$i][$pointy-1];
+  }
+  close OUTPUT;
 
-
-}
-
-
-
-
-
-open(VYSTUP,">$ini{prefix}"."$poradi[$i]_lumin"."$ini{suffix}") or die;
-
-for ($body=10;$body<$bodu[$i]-10;$body++){
-printf VYSTUP "$vlnocet[$i][$body]\t%1.6f\n",$orig[$i][$body]-$hodnota[$i][$body-1];
-}
-close VYSTUP;
-
-
-
-open(VYSTUP,">$ini{prefix}"."$poradi[$i]_luminescence"."$ini{suffix}") or die;
-
-printf VYSTUP "$vlnocet[$i][0]\t$hodnota[$i][0]\n";
-for ($body=1;$body<$bodu[$i];$body++){
-printf VYSTUP "$vlnocet[$i][$body]\t$hodnota[$i][$body-1]\n";
-}
-close VYSTUP;
-
-
+  open(OUTPUT,">$ini{prefix}"."$tolumin[$i]_luminescence"."$ini{suffix}") or die;
+  printf OUTPUT "$wnumber[$i][0]\t$value[$i][0]\n";
+  for ($pointy=1;$pointy<$points[$i];$pointy++){
+    printf OUTPUT "$wnumber[$i][$pointy]\t$value[$i][$pointy-1]\n";
+  }
+  close OUTPUT;
 
 
 
