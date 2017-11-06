@@ -7,7 +7,7 @@
 
 
 
-use GetOpt::Std;
+use Getopt::Std;
 getopts('vi:');
 
 $topen="cummulation.ini";
