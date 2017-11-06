@@ -76,15 +76,12 @@ for ($i=0;$i<$count;$i++){
 
   for ($pointy=0;$pointy<$points;$pointy++){
 
-    if ((($pointy-$window-1)>=0)and($pointy+$window+1)<$points){
-      $window++;
-    }
+    if ((($pointy-$window-1)>=0)and($pointy+$window+1)<$points){$window++;}
     while (($window>$ini{window})or($pointy+$window>=$points)){$window--}
 
     $average=0;
-    for ($y=$pointy-$window;$y<=$pointy+$window;$y++){
-      $average+=$orig[$i][$y];
-    }
+    for ($y=$pointy-$window;$y<=$pointy+$window;$y++){$average+=$orig[$i][$y];}
+
     printf OUTPUT "$wnumber[$pointy]\t%1.6f\n",$average/(2*$window+1);
   }
 
